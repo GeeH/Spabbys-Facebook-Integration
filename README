@@ -1,0 +1,21 @@
+Spabby's Facebook
+=================
+
+A set of Zend Framework designed to make Facebook iframe integration a snip.
+
+INSTALLTION
+1. Checkout the SFB directory to the library folder of your ZF project.
+
+USAGE
+1. Add the following lines to your application.ini:
+autoloaderNamespaces[] = SFB_
+SFB.fbAppId = <Facebook Application ID>
+SFB.fbSecret = <Facebook Secret>
+2. Any controllers you want to be only viewable as a Facebook iframe application, simply extend SFB_BaseFBAuthController, and make sure any init() function calls parent::init().
+3. Call your now Facebook enabled application from within a Facebook iframe app.
+4. Use $this->_facebook to integrate with the graph api, use the handy common methods, or extend SFB_Facebook to add your own!
+5. Calls to the Graph API are cached in the session, unless you set the $resetCache parameter to true.
+
+Enjoy
+
+its.spabby@gmail.com
