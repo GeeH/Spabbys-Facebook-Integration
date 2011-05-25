@@ -1,0 +1,80 @@
+<?php
+class MGames_BaseFBAuthController extends MGames_BaseController
+{
+    /** @var Model_Facebook Instance of the Model */
+
+    /**
+     * @var MGames_FacebookAuth;
+     */
+    protected $_fbAuth;
+    protected $_fbid;
+    protected $_hasInstalled;
+    /**
+     * @var Model_Facebook Instance of the model
+     */
+    protected $_facebook;
+    /**
+     * @var Zend_Config_Ini
+     */
+    protected $_settings;
+    protected $_fbSigs;
+
+    public function init()
+    {
+        /*
+         * Set the _settings var to contain our environment specific settings
+         */
+        if(Zend_Registry::isRegistered('settings'))
+        {
+            $this->_settings = Zend_Registry::get('settings');
+        }
+        else
+        {
+            $this->_settings = new Zend_Config_Ini(APPLICATION_PATH.'/configs/settings.ini', APPLICATION_ENV.'/facebook');
+        }
+        
+        /*
+         * Check the valid facbook sigs have been passed
+         */
+        $this->_fbSigs = Zend_Filter::filterStatic($this->_getParam('signed_request', ''), 'StripTags');        
+        if (empty($this->_fbSigs) && $this->_hasParam('nosigs'))
+        {
+            throw new Exception('No FBSIGS have been passed!');
+        }
+        if (empty($this->_fbSigs))
+        {
+            die('<script type="text/javascript">top.location = "'.$this->_settings->AppUrl.'?nosigs=1"</script>');
+        }
+        /*
+         * Authenticate the facebook sigs
+         */
+        $this->_fbAuth = new MGames_FacebookAuth($this->_fbSigs, $this->_settings);
+        /*
+         * Set the _fbid var to be the fbid if auth was successful
+         */
+        if($this->_fbAuth->isAuthed && $this->_fbAuth->hasInstalled && $this->_fbAuth->getFBID())
+        {
+            $this->_fbid = $this->_fbAuth->getFBID();
+        }
+        else
+        {
+            $this->_fbid = 0;
+        }
+        /*
+         * set _hasInstalled to be wether the user has installed the app or not
+         */
+        $this->_hasInstalled = $this->_fbAuth->hasInstalled;
+
+        /*
+         * Set up the Facebook class
+         */
+        $this->_facebook = new Model_Facebook(
+            $this->_settings->AppID,
+            $this->_settings->AppSecret,
+            $this->_fbAuth->fbSigs
+        );
+        
+    }
+
+}
+?>
